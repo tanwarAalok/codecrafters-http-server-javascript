@@ -6,9 +6,6 @@ console.log("Logs from your program will appear here!");
 const parseRequest = (requestData) => {
     const request = requestData.toString().split("\r\n");
 
-    console.log("Data: ", requestData);
-    console.log("Request: ", request);
-
     const [method, path, protocol] = request[0].split(" ");
 
     const headers = {};
@@ -26,10 +23,6 @@ const OK_RESPONSE = "HTTP/1.1 200 OK\r\n\r\n";
 const ERROR_RESPONSE = "HTTP/1.1 404 Not found\r\n\r\n";
 
 const server = net.createServer((socket) => {
-  socket.on("close", () => {
-    socket.end();
-    server.close();
-  });
 
   socket.on("data", (data) => {
       const request = parseRequest(data);
