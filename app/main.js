@@ -19,6 +19,10 @@ const server = net.createServer((socket) => {
       if (path === "/") {
           socket.write(OK_RESPONSE)
       }
+      else if (path.startsWith('/echo')) {
+          const randomString = path.substring(6);
+          socket.write(`HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${randomString.length}\r\n\r\n${randomString}`)
+      }
       else socket.write(ERROR_RESPONSE)
 
       socket.end();
