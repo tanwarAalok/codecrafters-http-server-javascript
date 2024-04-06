@@ -40,7 +40,7 @@ const server = net.createServer((socket) => {
       socket.write(
         `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${agent.length}\r\n\r\n${agent}`
       );
-    } else if (path.startsWith("/files/")) {
+    } else if (path.startsWith("/files/") && method === "GET") {
       const fileName = path.replace("/files/", "").trim();
       const filePath = process.argv[3] + fileName;
       const isExist = fs.readdirSync(process.argv[3]).some((file) => {
@@ -55,6 +55,13 @@ const server = net.createServer((socket) => {
         socket.write(ERROR_RESPONSE);
         1;
       }
+    } else if (path.startsWith("/files/") && method === "POST") {
+      const filename = process.argv[3] + "/" + path.substring(7);
+
+      const req = data.toString().split("\r\n");
+      const body = req[req.length - 1];
+      fs.writeFileSync(filename, body);
+      socket.write(`HTTP/1.1 201 CREATED\r\n\r\n`);
     } else socket.write(ERROR_RESPONSE);
 
     socket.end();
