@@ -1,6 +1,6 @@
 const net = require("net");
 const fs = require("fs");
-const filePath = process.argv[2];
+const FILE_PATH = process.argv[2];
 
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
@@ -41,16 +41,24 @@ const server = net.createServer((socket) => {
       socket.write(
         `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${agent.length}\r\n\r\n${agent}`
       );
-    } else if (path.startsWith("/files")) {
+    } else if (path.startsWith("/files/")) {
       const fileName = path.substring(7);
-      if (fs.existsSync(fileName)) {
-        const file = fs.readFileSync(fileName);
-        socket.write(
-          `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${file.length}\r\n\r\n${file}`
-        );
-      } else {
-        socket.write(ERROR_RESPONSE);
-      }
+      const filePath = `${FILE_PATH}/${fileName}`;
+      fs.access(filePath, fs.constants.F_OK, (err) => {
+        if (err) {
+          socket.write(ERROR_RESPONSE);
+        } else {
+          fs.readFile(filePath, (err, fileContents) => {
+            if (err) {
+              socket.write("HTTP/1.1 500 Internal Server Error\r\n\r\n");
+            } else {
+              socket.write(
+                `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: ${fileContents.length}\r\n\r\n${fileContents}`
+              );
+            }
+          });
+        }
+      });
     } else socket.write(ERROR_RESPONSE);
 
     socket.end();
